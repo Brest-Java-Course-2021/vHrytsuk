@@ -1,5 +1,12 @@
 package com.epambrest;
 
+import com.epambrest.reader.CSVFileReader;
+import com.epambrest.selector.PriceSelector;
+
+import java.io.FileReader;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
@@ -10,7 +17,17 @@ public class Main {
         // Price per kg
         // Result = d * pr1 + w * pr2
 
-        Double[] enteredValues = new Double[4];
+        FileReader distancePriceFileReader = new CSVFileReader();
+
+        Map<Integer, BigDecimal> distancePriceMap =
+                distancePriceFileReader.readData("price_distance.csv");
+
+        Map<Integer, BigDecimal> weightPriceMap =
+                distancePriceFileReader.readData("price_weight.csv");
+
+        PriceSelector priceSelector = new PriceSelector();
+
+        Double[] enteredValues = new Double[2];
         Scanner scanner = new Scanner(System.in);
         String inputValue;
 
@@ -20,43 +37,43 @@ public class Main {
 
         int i = 0;
         do {
-            if (i == 0) {
+            if (i == 0)
                 System.out.println("Please, enter distance:");
-            } else if (i == 1) {
-                System.out.println("Please, enter price per km:");
-            } else if (i == 2) {
+            else if (i == 1)
                 System.out.println("Please, enter weight:");
-            } else if (i == 3) {
-                System.out.println("Please, enter price per kg:");
-            }
 
             inputValue = scanner.next();
 
-            if (inputValue.equalsIgnoreCase("Q")) {
+            if (inputValue.equalsIgnoreCase("Q"))
                 break;
-            } else if (isCorrectDoubleValue(inputValue)) {
+
+            else if (isCorrectDoubleValue(inputValue)) {
                 enteredValues[i] = Double.parseDouble(inputValue);
                 i++;
-            } else {
+            } else
                 System.out.println("Incorrect value: " + inputValue);
-            }
 
-            if (i == 4) {
-                Double result = enteredValues[0] * enteredValues[1] + enteredValues[2] * enteredValues[3];
+
+            BigDecimal price = priceSelector.selectPriceValue(distancePriceMap, new BigInteger(enteredValues[0].toString()));
+            System.out.println("Price: " + price);
+
+            if (i == 2) {
+                double result = enteredValues[0] * price.doubleValue()
+                        + enteredValues[2] * enteredValues[3];
+
                 System.out.println("Result : " + result);
             }
 
-        } while (i < 4);
+        } while (i < 2);
     }
 
     private static boolean isCorrectDoubleValue(String value) {
         boolean checkResult;
+
         try {
             double enteredValue = Double.parseDouble(value);
             checkResult = enteredValue >= 0;
-        } catch (NumberFormatException ex) {
-            checkResult = false;
-        }
+        } catch (NumberFormatException ex) { checkResult = false; }
 
         return checkResult;
     }
